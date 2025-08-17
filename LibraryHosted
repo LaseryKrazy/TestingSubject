@@ -1,0 +1,154 @@
+local Library = {}
+
+function Library:CreateWindow(data)
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "CustomUILib"
+    ScreenGui.Parent = game:GetService("CoreGui")
+    ScreenGui.ResetOnSpawn = false
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 400, 0, 250)
+    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -125)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(70, 0, 100) -- Purple
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+    MainFrame.Parent = ScreenGui
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 12)
+    Corner.Parent = MainFrame
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, -40, 0, 40)
+    Title.BackgroundColor3 = Color3.fromRGB(90, 0, 130) -- Darker purple
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Text = data.Name or "Custom UI"
+    Title.Font = Enum.Font.SourceSansBold
+    Title.TextSize = 20
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = MainFrame
+
+    local TitleCorner = Instance.new("UICorner")
+    TitleCorner.CornerRadius = UDim.new(0, 12)
+    TitleCorner.Parent = Title
+
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Size = UDim2.new(0, 40, 0, 40)
+    CloseButton.Position = UDim2.new(1, -40, 0, 0)
+    CloseButton.BackgroundColor3 = Color3.fromRGB(120, 0, 160)
+    CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseButton.Text = "X"
+    CloseButton.Font = Enum.Font.SourceSansBold
+    CloseButton.TextSize = 18
+    CloseButton.Parent = MainFrame
+
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(0, 12)
+    CloseCorner.Parent = CloseButton
+
+    local TabHolder = Instance.new("Frame")
+    TabHolder.Size = UDim2.new(0, 120, 1, -40)
+    TabHolder.Position = UDim2.new(0, 0, 0, 40)
+    TabHolder.BackgroundColor3 = Color3.fromRGB(100, 0, 150)
+    TabHolder.Parent = MainFrame
+
+    local TabCorner = Instance.new("UICorner")
+    TabCorner.CornerRadius = UDim.new(0, 12)
+    TabCorner.Parent = TabHolder
+
+    local ContentFrame = Instance.new("Frame")
+    ContentFrame.Size = UDim2.new(1, -120, 1, -40)
+    ContentFrame.Position = UDim2.new(0, 120, 0, 40)
+    ContentFrame.BackgroundColor3 = Color3.fromRGB(80, 0, 120)
+    ContentFrame.Parent = MainFrame
+
+    local ContentCorner = Instance.new("UICorner")
+    ContentCorner.CornerRadius = UDim.new(0, 12)
+    ContentCorner.Parent = ContentFrame
+
+    local UIPageLayout = Instance.new("UIPageLayout")
+    UIPageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIPageLayout.Parent = ContentFrame
+
+    -- Hide + reopen
+    CloseButton.MouseButton1Click:Connect(function()
+        MainFrame.Visible = false
+    end)
+
+    game:GetService("UserInputService").InputBegan:Connect(function(input, gpe)
+        if not gpe and input.KeyCode == Enum.KeyCode.RightShift then
+            MainFrame.Visible = not MainFrame.Visible
+        end
+    end)
+
+    local Window = {}
+
+    function Window:CreateTab(tabName)
+        local TabButton = Instance.new("TextButton")
+        TabButton.Size = UDim2.new(1, 0, 0, 30)
+        TabButton.BackgroundColor3 = Color3.fromRGB(120, 0, 160)
+        TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TabButton.Text = tabName
+        TabButton.Parent = TabHolder
+
+        local TabButtonCorner = Instance.new("UICorner")
+        TabButtonCorner.CornerRadius = UDim.new(0, 8)
+        TabButtonCorner.Parent = TabButton
+
+        local TabPage = Instance.new("Frame")
+        TabPage.Size = UDim2.new(1, 0, 1, 0)
+        TabPage.BackgroundTransparency = 1
+        TabPage.Parent = ContentFrame
+
+        local UIListLayout = Instance.new("UIListLayout")
+        UIListLayout.Padding = UDim.new(0, 5)
+        UIListLayout.Parent = TabPage
+
+        TabButton.MouseButton1Click:Connect(function()
+            UIPageLayout:JumpTo(TabPage)
+        end)
+
+        local Tab = {}
+
+        function Tab:CreateButton(text, callback)
+            local Button = Instance.new("TextButton")
+            Button.Size = UDim2.new(1, -10, 0, 35)
+            Button.BackgroundColor3 = Color3.fromRGB(150, 0, 200)
+            Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Button.Text = text
+            Button.Parent = TabPage
+
+            local ButtonCorner = Instance.new("UICorner")
+            ButtonCorner.CornerRadius = UDim.new(0, 8)
+            ButtonCorner.Parent = Button
+
+            Button.MouseButton1Click:Connect(callback)
+        end
+
+        function Tab:CreateToggle(text, default, callback)
+            local Toggle = Instance.new("TextButton")
+            Toggle.Size = UDim2.new(1, -10, 0, 35)
+            Toggle.BackgroundColor3 = Color3.fromRGB(150, 0, 200)
+            Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Toggle.Text = text .. ": " .. (default and "ON" or "OFF")
+            Toggle.Parent = TabPage
+
+            local ToggleCorner = Instance.new("UICorner")
+            ToggleCorner.CornerRadius = UDim.new(0, 8)
+            ToggleCorner.Parent = Toggle
+
+            local state = default or false
+            Toggle.MouseButton1Click:Connect(function()
+                state = not state
+                Toggle.Text = text .. ": " .. (state and "ON" or "OFF")
+                callback(state)
+            end)
+        end
+
+        return Tab
+    end
+
+    return Window
+end
+
+return Library
